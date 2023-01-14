@@ -1,13 +1,9 @@
 from flask import Flask, redirect, request, url_for, session
-from spotipy import SpotifyOAuth
-from random import choices
-from string import ascii_letters, digits
+from spotipy import SpotifyOAuth, Spotify
 from time import time
 
-key_letters = choices(ascii_letters + digits, k=16)
-
 app = Flask(__name__)
-app.secret_key = "".join([str(i) for i in key_letters])
+app.secret_key = "khgkajhgjhjag"
 app.config["SESSION_COOKIE_NAME"] = "spotify-login-session"
 TOKEN_INFO = "token_info"
 
@@ -54,7 +50,24 @@ def redirectPage():
 
 @app.route("/getTracks")
 def getTracks():
-    return "This is the get tracks page"
+    try:
+        token_info = get_token()
+    except:
+        print("User not logged in")
+        redirect(location=url_for("login", _external=False))
+
+    sp = Spotify(auth=token_info["access_token"])
+
+    all_songs = []
+    iteration = 0
+
+    while True:
+        items = sp.current_user_playlists(limit=50, offset=iteration)
+        iteration += 1
+        all_songs += items
+
+        if (len(items)) < 50:
+            break
 
 
 if __name__ == "__main__":
