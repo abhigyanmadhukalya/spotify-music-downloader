@@ -2,6 +2,7 @@ from flask import Flask, redirect, request, url_for, session
 from spotipy import SpotifyOAuth, Spotify
 from time import time
 from download_mp3 import download_mp4_from_titles
+from os import getenv
 import pandas as pd
 import json
 import csv
@@ -15,8 +16,8 @@ TOKEN_INFO = "token_info"
 
 def create_oauth_object():
     return SpotifyOAuth(
-        client_id="37966fda0d884fcc8d13f2d3d6d6e7e1",
-        client_secret="0232febf10974b9091b8e05d013ff547",
+        client_id=str(getenv("SPOTIFY_CLIENT_ID")),
+        client_secret=getenv("SPOTIFY_CLIENT_SECRET"),
         redirect_uri=url_for("authorise", _external=True),
         scope="user-library-read",
     )
