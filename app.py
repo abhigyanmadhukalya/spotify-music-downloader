@@ -17,7 +17,7 @@ TOKEN_INFO = "token_info"
 def create_oauth_object():
     return SpotifyOAuth(
         client_id=str(getenv("SPOTIFY_CLIENT_ID")),
-        client_secret=getenv("SPOTIFY_CLIENT_SECRET"),
+        client_secret=str(getenv("SPOTIFY_CLIENT_SECRET")),
         redirect_uri=url_for("authorise", _external=True),
         scope="user-library-read",
     )
