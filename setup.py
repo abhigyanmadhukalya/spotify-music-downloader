@@ -1,5 +1,5 @@
 from importlib.metadata import requires
-from setuptools import setup
+from setuptools import setup, find_packages
 
 requires = [
     "flask",
