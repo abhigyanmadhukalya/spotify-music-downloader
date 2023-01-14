@@ -1,9 +1,14 @@
 from flask import Flask, redirect, request, url_for, session
 from spotipy import SpotifyOAuth, Spotify
 from time import time
+from download_mp3 import download_mp4_from_titles
+import pandas as pd
+import json
+import csv
+
 
 app = Flask(__name__)
-app.secret_key = "khgkajhgjhjag"
+app.secret_key = "super secret key"
 app.config["SESSION_COOKIE_NAME"] = "spotify-login-session"
 TOKEN_INFO = "token_info"
 
@@ -12,7 +17,7 @@ def create_oauth_object():
     return SpotifyOAuth(
         client_id="37966fda0d884fcc8d13f2d3d6d6e7e1",
         client_secret="0232febf10974b9091b8e05d013ff547",
-        redirect_uri=url_for("redirectPage", _external=True),
+        redirect_uri=url_for("authorise", _external=True),
         scope="user-library-read",
     )
 
@@ -35,39 +40,50 @@ def get_token():
 def login():
     oauth = create_oauth_object()
     auth_url = oauth.get_authorize_url()
+    print(auth_url)
     return redirect(auth_url)
 
 
-@app.route("/redirect")
-def redirectPage():
+@app.route("/logout")
+def logout():
+    for key in list(session.keys()):
+        session.pop(key)
+    return redirect("/")
+
+
+@app.route("/authorise")
+def authorise():
     oauth = create_oauth_object()
     session.clear()
     code = request.args.get("code")
     token_info = oauth.get_access_token(code)
     session[TOKEN_INFO] = token_info
-    return redirect(url_for("getTracks", _external=True))
+    return redirect("/getTracks")
 
 
 @app.route("/getTracks")
-def getTracks():
-    try:
-        token_info = get_token()
-    except:
-        print("User not logged in")
-        redirect(location=url_for("login", _external=False))
-
-    sp = Spotify(auth=token_info["access_token"])
-
-    all_songs = []
-    iteration = 0
-
+def get_all_tracks():
+    session["token_info"], authorized = get_token()
+    session.modified = True
+    if not authorized:
+        return redirect("/")
+    sp = spotipy.Spotify(auth=session.get("token_info").get("access_token"))
+    results = []
+    iter = 0
     while True:
-        items = sp.current_user_playlists(limit=50, offset=iteration)
-        iteration += 1
-        all_songs += items
-
-        if (len(items)) < 50:
+        offset = iter * 50
+        iter += 1
+        curGroup = sp.current_user_saved_tracks(limit=50, offset=offset)["items"]
+        for idx, item in enumerate(curGroup):
+            track = item["track"]
+            val = track["name"] + " - " + track["artists"][0]["name"]
+            results += [val]
+        if len(curGroup) < 50:
             break
+
+    df = pd.DataFrame(results, columns=["song names"])
+    df.to_csv("songs.csv", index=False)
+    return "done"
 
 
 if __name__ == "__main__":
