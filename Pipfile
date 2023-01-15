@@ -6,6 +6,13 @@ name = "pypi"
 [packages]
 flask = "*"
 spotipy = "*"
+html5lib = "*"
+requests = "*"
+pandas = "*"
+youtube_dl = "*"
+pathlib = "*"
+requests_html = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 
