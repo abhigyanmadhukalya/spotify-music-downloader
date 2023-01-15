@@ -1,5 +1,5 @@
-from bs4 import BeautifulSoup
-from requests_html import HTMLSession
+from bs4 import BeautifulSoup as bs
+from requests_html import HTMLSession as hs
 from pathlib import Path
 import youtube_dl as yd
 import pandas as pd
@@ -12,10 +12,10 @@ def scrape_vid_id(query):
     URL = BASIC + query
     URL.replace(" ", "+")
     page = requests.get(URL)
-    session = HTMLSession()
+    session = hs()
     response = session.get(URL)
     response.html.render(sleep=1)
-    soup = BeautifulSoup(response.html.html, "html.parser")
+    soup = bs(response.html.html, "html.parser")
 
     results = soup.find("a", id="video-title")
     return results["href"].split("/watch?v=")[1]
